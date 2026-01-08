@@ -1,0 +1,87 @@
+export const USER_ROLES = {
+  CUSTOMER: 'CUSTOMER',
+  STORE_OWNER: 'STORE_OWNER',
+  DELIVERY_PARTNER: 'DELIVERY_PARTNER',
+  ADMIN: 'ADMIN'
+} as const;
+
+export const USER_STATUS = {
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+  SUSPENDED: 'SUSPENDED',
+  REJECTED: 'REJECTED'
+} as const;
+
+export const ORDER_STATUS = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY_FOR_PICKUP: 'READY_FOR_PICKUP',
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+} as const;
+
+export const PAYMENT_STATUS = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+} as const;
+
+export const DELIVERY_STATUS = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  PICKED_UP: 'PICKED_UP',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+} as const;
+
+export const PRODUCT_CATEGORIES = {
+  SHIRTS: 'SHIRTS',
+  PANTS: 'PANTS',
+  DRESSES: 'DRESSES',
+  JACKETS: 'JACKETS',
+  ACCESSORIES: 'ACCESSORIES',
+  SHOES: 'SHOES',
+  UNDERWEAR: 'UNDERWEAR',
+  SPORTSWEAR: 'SPORTSWEAR'
+} as const;
+
+export const NOTIFICATION_TYPES = {
+  ORDER: 'order',
+  DELIVERY: 'delivery',
+  PAYMENT: 'payment',
+  SYSTEM: 'system'
+} as const;
+
+export const PAYMENT_METHODS = {
+  RAZORPAY: 'razorpay',
+  COD: 'cod'
+} as const;
+
+export const DELIVERY_FEES = {
+  BASE_FEE: 20,
+  PER_KM_FEE: 5,
+  URGENT_FEE: 15
+} as const;
+
+export const PLATFORM_COMMISSION = {
+  DELIVERY_PARTNER: 0.15, // 15%
+  STORE: 0.10 // 10%
+} as const;
+
+export const DEFAULT_DELIVERY_TIME = 10; // minutes
+export const MAX_DELIVERY_RADIUS = 20; // km
+
+export const OTP_LENGTH = 6;
+export const BARCODE_LENGTH = 12;
+
+export const FILE_UPLOAD_LIMITS = {
+  MAX_SIZE: 5 * 1024 * 1024, // 5MB
+  ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
+  MAX_FILES: 5
+} as const;

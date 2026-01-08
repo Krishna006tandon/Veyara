@@ -1,0 +1,345 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  STORE_OWNER
+  DELIVERY_PARTNER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  VERIFIED
+  SUSPENDED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ACCEPTED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum ProductCategory {
+  SHIRTS
+  PANTS
+  DRESSES
+  JACKETS
+  ACCESSORIES
+  SHOES
+  UNDERWEAR
+  SPORTSWEAR
+}
+
+model User {
+  id          String   @id @default(cuid()) @map("_id")
+  email       String   @unique
+  phone       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        UserRole @default(CUSTOMER)
+  status      UserStatus @default(PENDING)
+  avatar      String?
+  isVerified  Boolean  @default(false)
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  addresses   Address[]
+  orders      Order[]
+  store       Store?
+  deliveries  Delivery[]
+  reviews     Review[]
+  payments    Payment[]
+
+  @@map("users")
+}
+
+model Address {
+  id          String   @id @default(cuid()) @map("_id")
+  userId      String
+  type        String   // "home", "work", "other"
+  street      String
+  city        String
+  state       String
+  zipCode     String
+  country     String   @default("India")
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Store {
+  id          String   @id @default(cuid()) @map("_id")
+  ownerId     String   @unique
+  name        String
+  description String?
+  email       String
+  phone       String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  latitude    Float
+  longitude   Float
+  status      UserStatus @default(PENDING)
+  rating      Float?    @default(0)
+  totalOrders Int      @default(0)
+  isActive    Boolean  @default(true)
+  deliveryRadiusKm Float @default(5)
+  avgDeliveryTimeMinutes Int @default(10)
+  logo        String?
+  coverImage  String?
+  operatingHours Json? // Store operating hours
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products Product[]
+  orders   Order[]
+  inventory Inventory[]
+
+  @@map("stores")
+}
+
+model Product {
+  id          String         @id @default(cuid()) @map("_id")
+  storeId     String
+  name        String
+  description String?
+  category    ProductCategory
+  brand       String?
+  price       Float
+  originalPrice Float?
+  images      String[]       // Array of image URLs
+  sizes       String[]       // Available sizes: ["S", "M", "L", "XL"]
+  colors      String[]       // Available colors: ["red", "blue", "black"]
+  materials   String[]       // Material information
+  careInstructions String?
+  tags        String[]       // Search tags
+  isActive    Boolean        @default(true)
+  isFeatured  Boolean        @default(false)
+  stock       Int            @default(0)
+  soldCount   Int            @default(0)
+  rating      Float?         @default(0)
+  reviewCount Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  inventory Inventory[]
+  reviews Review[]
+
+  @@map("products")
+}
+
+model Inventory {
+  id        String   @id @default(cuid()) @map("_id")
+  storeId   String
+  productId String
+  size      String
+  color     String
+  quantity  Int
+  reserved  Int      @default(0) // Reserved for ongoing orders
+  lowStockThreshold Int @default(5)
+  lastUpdated DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, productId, size, color])
+  @@map("inventory")
+}
+
+model Order {
+  id            String      @id @default(cuid()) @map("_id")
+  orderNumber   String      @unique
+  userId        String
+  storeId       String
+  totalAmount   Float
+  deliveryFee   Float       @default(0)
+  taxAmount     Float       @default(0)
+  discountAmount Float      @default(0)
+  finalAmount   Float
+  currency      String      @default("INR")
+  status        OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  deliveryAddress Json       // Delivery address details
+  deliveryInstructions String?
+  estimatedDeliveryTime DateTime
+  actualDeliveryTime DateTime?
+  customerNotes String?
+  storeNotes    String?
+  otp           String?     // For delivery verification
+  barcode       String?     // For package tracking
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  delivery    Delivery?
+  payments    Payment[]
+  reviews     Review[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String @id @default(cuid()) @map("_id")
+  orderId     String
+  productId   String
+  quantity    Int
+  price       Float
+  size        String
+  color       String
+  totalAmount Float
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Delivery {
+  id              String          @id @default(cuid()) @map("_id")
+  orderId         String          @unique
+  partnerId       String
+  pickupAddress   Json            // Store address
+  deliveryAddress Json            // Customer address
+  status          DeliveryStatus  @default(PENDING)
+  estimatedTime   Int             // in minutes
+  actualTime      Int?            // in minutes
+  distance        Float           // in km
+  earnings        Float
+  partnerEarnings Float           // Partner's share after commission
+  platformFee    Float           // Platform commission
+  pickupOtp       String?         // OTP for pickup verification
+  deliveryOtp     String?         // OTP for delivery verification
+  pickupTime      DateTime?
+  deliveryTime    DateTime?
+  partnerLocation Json?           // Current location of delivery partner
+  route           Json?           // Route information
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  partner User @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("deliveries")
+}
+
+model Payment {
+  id            String        @id @default(cuid()) @map("_id")
+  orderId       String
+  userId        String
+  amount        Float
+  currency      String        @default("INR")
+  status        PaymentStatus @default(PENDING)
+  method        String        // "razorpay", "cod", etc.
+  transactionId String?       // Gateway transaction ID
+  gatewayResponse Json?       // Full response from payment gateway
+  refundId      String?       // Refund transaction ID
+  refundAmount  Float?        // Refund amount
+  refundReason  String?       // Reason for refund
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Review {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  productId String?
+  orderId   String?
+  storeId   String?
+  deliveryId String?
+  rating    Int      // 1-5 stars
+  comment   String?
+  images    String[] // Review images
+  isVerified Boolean @default(false)
+  helpfulCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product  Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order    Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Notification {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  title     String
+  message   String
+  type      String   // "order", "delivery", "payment", "system"
+  data      Json?    // Additional data
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String?
+  action    String   // "create", "update", "delete", "login", etc.
+  resource  String   // "user", "order", "product", etc.
+  resourceId String?
+  oldValues Json?
+  newValues Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
