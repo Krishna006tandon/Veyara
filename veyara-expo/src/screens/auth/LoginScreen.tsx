@@ -8,6 +8,7 @@ type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   Main: undefined;
+  StoreAuth: undefined;
 };
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -78,6 +79,15 @@ const LoginScreen = () => {
             Don't have an account? Sign Up
           </Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.storeLoginButton}
+          onPress={() => navigation.navigate('StoreAuth')}
+        >
+          <Text style={styles.storeLoginText}>
+            Store Owner? Sign In Here
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -142,6 +152,18 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#FF6B6B',
     fontSize: 14,
+  },
+  storeLoginButton: {
+    marginTop: 15,
+    alignItems: 'center',
+    backgroundColor: '#5682B1',
+    padding: 12,
+    borderRadius: 8,
+  },
+  storeLoginText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

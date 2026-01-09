@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useState, ReactNode } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from '../store/indexSimple';
 import { loginStart, loginSuccess, loginFailure, logout } from '../store/slices/authSlice';
 import { api } from '../services/api';
 
@@ -10,6 +10,9 @@ interface AuthContextType {
   logoutUser: () => void;
   isLoading: boolean;
   error: string | null;
+  user: any;
+  verificationStatus: 'pending' | 'approved' | 'rejected' | 'needs_review';
+  updateVerificationStatus: (status: 'pending' | 'approved' | 'rejected' | 'needs_review') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,7 +23,12 @@ interface AuthProviderProps {
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
-  const { isAuthenticated, token, isLoading, error } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, token, isLoading, error, user } = useSelector((state: RootState) => state.auth);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'rejected' | 'needs_review'>('pending');
+
+  const updateVerificationStatus = (status: 'pending' | 'approved' | 'rejected' | 'needs_review') => {
+    setVerificationStatus(status);
+  };
 
   const login = async (email: string, password: string) => {
     try {
@@ -64,6 +72,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logoutUser,
     isLoading,
     error,
+    user,
+    verificationStatus,
+    updateVerificationStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -18,6 +18,7 @@ import orderRoutes from './routes/orders';
 import deliveryRoutes from './routes/delivery';
 import paymentRoutes from './routes/payments';
 import adminRoutes from './routes/admin';
+import licenseVerificationRoutes from './routes/licenseVerification';
 
 import { initializeSocket } from './socket/socketHandler';
 import prisma from './utils/database';
@@ -33,7 +34,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = 5000;
 
 // Rate limiting
 const limiter = rateLimit({
@@ -86,6 +87,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/license-verification', licenseVerificationRoutes);
 
 // Error handling
 app.use(notFound);
@@ -94,6 +96,7 @@ app.use(errorHandler);
 // Initialize Socket.IO
 initializeSocket(io);
 
+// Server startup
 server.listen(PORT, () => {
   console.log(`🚀 Veyara API server running on port ${PORT}`);
   console.log(`📊 Health check available at http://localhost:${PORT}/health`);

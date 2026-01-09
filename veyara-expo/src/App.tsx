@@ -9,6 +9,7 @@ import { LocationProvider } from './contexts/LocationContext';
 import { SocketProvider } from './contexts/SocketContext';
 
 import AuthNavigator from './navigation/AuthNavigator';
+import StoreAuthNavigator from './navigation/StoreAuthNavigator';
 import MainNavigator from './navigation/MainNavigator';
 import SplashScreen from './screens/SplashScreen';
 
@@ -39,6 +40,7 @@ const App: React.FC = () => {
               <NavigationContainer>
                 <Stack.Navigator screenOptions={{ headerShown: false }}>
                   <Stack.Screen name="Auth" component={AuthNavigator} />
+                  <Stack.Screen name="StoreAuth" component={StoreAuthNavigator} />
                   <Stack.Screen name="Main" component={MainNavigator} />
                 </Stack.Navigator>
               </NavigationContainer>
